@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useState } from 'react';
 import { PanResponder, View, TouchableOpacity, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-// simple freehand drawing over a view
 export default function DrawingCanvas({ onPathsChange, initialPaths = [] }) {
   const [paths, setPaths] = useState(initialPaths);
   const [color, setColor] = useState('#ff4757');
@@ -21,20 +20,17 @@ export default function DrawingCanvas({ onPathsChange, initialPaths = [] }) {
         onMoveShouldSetPanResponder: () => true,
         onPanResponderGrant: (evt) => {
           const { locationX, locationY } = evt.nativeEvent;
-          // start path
           currentPath.current = `M ${locationX} ${locationY}`;
           update([...paths, { d: currentPath.current, color, strokeWidth }]);
         },
         onPanResponderMove: (evt) => {
           const { locationX, locationY } = evt.nativeEvent;
-          // extend path
           currentPath.current += ` L ${locationX} ${locationY}`;
           const next = [...paths];
           next[next.length - 1] = { d: currentPath.current, color, strokeWidth };
           update(next);
         },
         onPanResponderRelease: () => {
-          // end path
           currentPath.current = "";
         },
         onPanResponderTerminate: () => {
@@ -45,7 +41,6 @@ export default function DrawingCanvas({ onPathsChange, initialPaths = [] }) {
   );
 
   const clear = () => {
-    // clear drawings
     update([]);
   };
 

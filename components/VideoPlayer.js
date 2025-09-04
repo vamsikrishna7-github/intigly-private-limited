@@ -2,22 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
 
-// simple video player with play/pause and current time
 export default function VideoPlayer({ onTimeUpdate, onRegisterSeek, overlay, style }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // player
   const player = useVideoPlayer(
-    { uri: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+    { uri: 'https://framerusercontent.com/assets/Z6SXGugjfLsnVbUatTM72g1gKVc.mp4' },
     (p) => {
-      // initial setup
       p.loop = false;
     }
   );
 
-  // expose seek function to parent
   useEffect(() => {
     if (!onRegisterSeek) return;
     const seek = async (seconds) => {
@@ -25,13 +21,11 @@ export default function VideoPlayer({ onTimeUpdate, onRegisterSeek, overlay, sty
         player.seekTo(seconds);
         setCurrentTime(seconds);
       } catch (e) {
-        // ignore
       }
     };
     onRegisterSeek(seek);
   }, [onRegisterSeek, player]);
 
-  // track time
   useEffect(() => {
     const id = setInterval(() => {
       const t = player.currentTime;
@@ -47,11 +41,9 @@ export default function VideoPlayer({ onTimeUpdate, onRegisterSeek, overlay, sty
 
   const togglePlay = async () => {
     if (isPlaying) {
-      // pause video
       player.pause();
       setIsPlaying(false);
     } else {
-      // play video
       player.play();
       setIsPlaying(true);
     }
