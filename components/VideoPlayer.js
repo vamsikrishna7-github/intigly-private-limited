@@ -1,51 +1,58 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
-import { Video } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 
 // simple video player with play/pause and current time
 export default function VideoPlayer({ onTimeUpdate, onRegisterSeek, overlay, style }) {
-  const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+
+  // player
+  const player = useVideoPlayer(
+    { uri: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+    (p) => {
+      // initial setup
+      p.loop = false;
+    }
+  );
 
   // expose seek function to parent
   useEffect(() => {
     if (!onRegisterSeek) return;
     const seek = async (seconds) => {
-      if (!videoRef.current) return;
       try {
-        await videoRef.current.setPositionAsync(seconds * 1000);
+        player.seekTo(seconds);
         setCurrentTime(seconds);
       } catch (e) {
         // ignore
       }
     };
     onRegisterSeek(seek);
-  }, [onRegisterSeek]);
+  }, [onRegisterSeek, player]);
 
-  const onStatusUpdate = (status) => {
-    if (!status) return;
-    if (status.positionMillis != null) {
-      const t = Math.max(0, status.positionMillis / 1000);
-      setCurrentTime(t);
-      // report up
-      onTimeUpdate && onTimeUpdate(t);
-    }
-    if (status.durationMillis != null) {
-      setDuration(status.durationMillis / 1000);
-    }
-  };
+  // track time
+  useEffect(() => {
+    const id = setInterval(() => {
+      const t = player.currentTime;
+      const d = player.duration ?? 0;
+      if (typeof t === 'number') {
+        setCurrentTime(t);
+        onTimeUpdate && onTimeUpdate(t);
+      }
+      if (typeof d === 'number') setDuration(d);
+    }, 250);
+    return () => clearInterval(id);
+  }, [player, onTimeUpdate]);
 
   const togglePlay = async () => {
-    if (!videoRef.current) return;
     if (isPlaying) {
       // pause video
-      await videoRef.current.pauseAsync();
+      player.pause();
       setIsPlaying(false);
     } else {
       // play video
-      await videoRef.current.playAsync();
+      player.play();
       setIsPlaying(true);
     }
   };
@@ -60,14 +67,12 @@ export default function VideoPlayer({ onTimeUpdate, onRegisterSeek, overlay, sty
   return (
     <View className="w-full" style={style}>
       <View className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
-        <Video
-          ref={videoRef}
-          // sample video
-          source={{ uri: 'https://www.w3schools.com/html/mov_bbb.mp4' }}
+        <VideoView
           style={{ width: '100%', height: '100%' }}
-          resizeMode="contain"
-          shouldPlay={false}
-          onPlaybackStatusUpdate={onStatusUpdate}
+          player={player}
+          allowsFullscreen
+          allowsPictureInPicture
+          contentFit="contain"
         />
         {overlay ? (
           <View pointerEvents="box-none" className="absolute inset-0">

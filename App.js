@@ -4,7 +4,6 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import VideoPlayer from './components/VideoPlayer';
 import DrawingCanvas from './components/DrawingCanvas';
-import "../global.css";
 
 
 export default function App() {
