@@ -55,7 +55,6 @@ export default function App() {
   };
 
   const jumpTo = (t) => {
-    // seek video
     if (seekRef.current) {
       seekRef.current(t);
     } else {
